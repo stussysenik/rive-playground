@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FULALA Tiger Animation</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #1a1a1a;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  #canvas-wrap {
+    width: min(88vw, 88vh, 1080px);
+    height: min(88vw, 88vh, 1080px);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+  #tiger-svg { width: 100%; height: 100%; display: block; }
+  .controls { margin-top: 20px; display: flex; gap: 12px; align-items: center; }
+  button {
+    padding: 10px 22px;
+    border: 2px solid #E63329;
+    background: transparent;
+    color: #E63329;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  button:hover { background: #E63329; color: #fff; }
+  button.recording {
+    background: #E63329; color: #fff;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+  #status { color: #777; margin-top: 8px; font-size: 13px; min-height: 20px; }
+  canvas { display: none; }
+</style>
+</head>
+<body>
+
+<div id="canvas-wrap">
+<!-- viewBox zoomed in to make tiger fill the frame -->
+<svg id="tiger-svg" viewBox="150 80 780 780" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="48%" r="65%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FFF3ED"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1080" height="1080" fill="url(#bg)"/>
+
+  <!-- Floating particles -->
+  <g id="particles" opacity="0.15">
+    <circle class="particle" cx="220" cy="200" r="4" fill="#E63329"/>
+    <circle class="particle" cx="850" cy="250" r="3.5" fill="#E63329"/>
+    <circle class="particle" cx="250" cy="680" r="3" fill="#E63329"/>
+    <circle class="particle" cx="820" cy="720" r="4" fill="#E63329"/>
+    <circle class="particle" cx="480" cy="140" r="3" fill="#E63329"/>
+    <circle class="particle" cx="700" cy="800" r="3.5" fill="#E63329"/>
+    <circle class="particle" cx="180" cy="450" r="3" fill="#E63329"/>
+    <circle class="particle" cx="880" cy="500" r="3.5" fill="#E63329"/>
+  </g>
+
+  <!-- =============== TIGER =============== -->
+  <g id="tiger" transform="translate(540, 470)">
+
+    <!-- === TAIL === -->
+    <g id="tail">
+      <path d="M88,55 C118,42 135,15 132,-10 C129,-30 136,-48 128,-65"
+            stroke="#E63329" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+      <!-- Tail stripes -->
+      <path d="M134,-2 L138,-14" stroke="#E63329" stroke-width="4" stroke-linecap="round"/>
+      <path d="M131,-28 L136,-40" stroke="#E63329" stroke-width="4" stroke-linecap="round"/>
+      <!-- Tail tip -->
+      <circle cx="126" cy="-68" r="5" stroke="#E63329" stroke-width="3.5" fill="white"/>
+    </g>
+
+    <!-- === BODY === -->
+    <g id="body">
+      <!-- Main body -->
+      <ellipse cx="0" cy="85" rx="98" ry="115" stroke="#E63329" stroke-width="5.5" fill="white"/>
+      <!-- Belly circle -->
+      <ellipse cx="0" cy="105" rx="52" ry="62" stroke="#E63329" stroke-width="2" fill="none" opacity="0.3"/>
+      <!-- Stripes left (short inward curves) -->
+      <path d="M-88,40 C-78,44 -76,54 -84,60" stroke="#E63329" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M-92,72 C-80,77 -78,90 -88,96" stroke="#E63329" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M-88,104 C-78,109 -76,122 -84,128" stroke="#E63329" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <!-- Stripes right -->
+      <path d="M88,40 C78,44 76,54 84,60" stroke="#E63329" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M92,72 C80,77 78,90 88,96" stroke="#E63329" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M88,104 C78,109 76,122 84,128" stroke="#E63329" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </g>
+
+    <!-- === HIND PAWS (sitting position — at body sides) === -->
+    <g id="paws-hind">
+      <!-- Left haunch/paw -->
+      <ellipse cx="-100" cy="168" rx="32" ry="18" stroke="#E63329" stroke-width="5" fill="white"/>
+      <line x1="-115" y1="168" x2="-108" y2="168" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="-102" y1="168" x2="-96" y2="168" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="-90" y1="168" x2="-84" y2="168" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Right haunch/paw -->
+      <ellipse cx="100" cy="168" rx="32" ry="18" stroke="#E63329" stroke-width="5" fill="white"/>
+      <line x1="84" y1="168" x2="90" y2="168" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="96" y1="168" x2="102" y2="168" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="108" y1="168" x2="115" y2="168" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+
+    <!-- === BOWL === -->
+    <g id="bowl-group">
+      <!-- Bowl body -->
+      <path d="M-72,188 Q-76,222 -50,240 Q0,260 50,240 Q76,222 72,188 Z"
+            stroke="#E63329" stroke-width="5" fill="white" stroke-linejoin="round"/>
+      <!-- Rim -->
+      <line x1="-80" y1="188" x2="80" y2="188" stroke="#E63329" stroke-width="5.5" stroke-linecap="round"/>
+      <!-- Decorative bands -->
+      <path d="M-65,204 Q0,208 65,204" stroke="#E63329" stroke-width="2" fill="none" opacity="0.45"/>
+      <path d="M-55,225 Q0,230 55,225" stroke="#E63329" stroke-width="2" fill="none" opacity="0.45"/>
+      <!-- 福 character -->
+      <text x="0" y="220" text-anchor="middle" dominant-baseline="central"
+            fill="#E63329" font-size="26" font-weight="bold"
+            font-family="'Noto Serif SC', 'SimSun', 'STSong', 'Songti SC', serif">福</text>
+
+      <!-- Noodles peeking over bowl rim -->
+      <g id="noodles-bowl">
+        <path d="M-32,186 Q-22,172 -10,186 Q2,198 14,186 Q26,172 36,186"
+              stroke="#E63329" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M-22,183 Q-12,170 0,183 Q12,196 24,183"
+              stroke="#E63329" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- === NOODLE STRANDS (lifted by chopsticks) === -->
+    <g id="noodle-strands" opacity="0">
+      <path class="strand" d="M-8,185 C-16,155 -28,100 -34,30 Q-36,10 -38,-5"
+            stroke="#E63329" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path class="strand" d="M5,185 C-4,150 -18,90 -28,25 Q-30,5 -32,-5"
+            stroke="#E63329" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path class="strand" d="M-1,185 C-10,148 -24,95 -31,28 Q-34,8 -35,-2"
+            stroke="#E63329" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.6"/>
+    </g>
+
+    <!-- === STEAM === -->
+    <g id="steam">
+      <path class="steam-puff" d="M-18,168 Q-24,150 -16,138 Q-10,126 -16,114"
+            stroke="#E63329" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.45"/>
+      <path class="steam-puff" d="M2,165 Q8,146 0,134 Q-6,122 0,110"
+            stroke="#E63329" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.45"/>
+      <path class="steam-puff" d="M22,168 Q16,150 24,138 Q30,126 24,114"
+            stroke="#E63329" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.45"/>
+    </g>
+
+    <!-- === LEFT ARM + CHOPSTICKS === -->
+    <g id="left-arm">
+      <!-- Arm curve from shoulder down to paw -->
+      <path d="M-70,42 C-85,80 -80,125 -60,155"
+            stroke="#E63329" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+      <!-- Paw -->
+      <circle cx="-60" cy="155" r="15" stroke="#E63329" stroke-width="5" fill="white"/>
+      <!-- Paw toes -->
+      <line x1="-69" y1="149" x2="-66" y2="145" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="-60" y1="147" x2="-60" y2="142" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="-51" y1="149" x2="-54" y2="145" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Chopsticks -->
+      <g id="chopsticks">
+        <line x1="-64" y1="150" x2="-40" y2="48" stroke="#E63329" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="-54" y1="150" x2="-30" y2="48" stroke="#E63329" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- Tips (small noodle bits) -->
+        <circle cx="-40" cy="48" r="2.5" fill="#E63329"/>
+        <circle cx="-30" cy="48" r="2.5" fill="#E63329"/>
+      </g>
+    </g>
+
+    <!-- === RIGHT ARM === -->
+    <g id="right-arm">
+      <path d="M70,42 C85,80 80,125 60,155"
+            stroke="#E63329" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+      <circle cx="60" cy="155" r="15" stroke="#E63329" stroke-width="5" fill="white"/>
+      <line x1="69" y1="149" x2="66" y2="145" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="60" y1="147" x2="60" y2="142" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="51" y1="149" x2="54" y2="145" stroke="#E63329" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+
+    <!-- === HEAD === -->
+    <g id="head">
+      <!-- Main head circle -->
+      <circle cx="0" cy="-82" r="138" stroke="#E63329" stroke-width="5.5" fill="white"/>
+
+      <!-- EARS -->
+      <g id="ears">
+        <!-- Left ear -->
+        <path d="M-95,-190 C-115,-240 -82,-268 -55,-228 C-44,-210 -62,-194 -95,-190"
+              stroke="#E63329" stroke-width="5" fill="white" stroke-linejoin="round"/>
+        <!-- Left ear inner -->
+        <path d="M-86,-206 C-97,-232 -80,-246 -64,-222"
+              stroke="#E63329" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <!-- Right ear -->
+        <path d="M95,-190 C115,-240 82,-268 55,-228 C44,-210 62,-194 95,-190"
+              stroke="#E63329" stroke-width="5" fill="white" stroke-linejoin="round"/>
+        <!-- Right ear inner -->
+        <path d="M86,-206 C97,-232 80,-246 64,-222"
+              stroke="#E63329" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <!-- FOREHEAD STRIPES (王 king mark) -->
+      <path d="M-20,-175 L-15,-152" stroke="#E63329" stroke-width="5" stroke-linecap="round"/>
+      <path d="M0,-180 L0,-155" stroke="#E63329" stroke-width="5" stroke-linecap="round"/>
+      <path d="M20,-175 L15,-152" stroke="#E63329" stroke-width="5" stroke-linecap="round"/>
+
+      <!-- CHEEK STRIPES -->
+      <path d="M-112,-90 L-88,-86" stroke="#E63329" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M-115,-70 L-90,-68" stroke="#E63329" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M112,-90 L88,-86" stroke="#E63329" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M115,-70 L90,-68" stroke="#E63329" stroke-width="3.5" stroke-linecap="round"/>
+
+      <!-- EYES -->
+      <g id="eyes">
+        <g id="left-eye">
+          <ellipse cx="-44" cy="-85" rx="9" ry="9" fill="#E63329"/>
+          <ellipse cx="-40" cy="-88" rx="3" ry="3" fill="white"/>
+        </g>
+        <g id="right-eye">
+          <ellipse cx="44" cy="-85" rx="9" ry="9" fill="#E63329"/>
+          <ellipse cx="48" cy="-88" rx="3" ry="3" fill="white"/>
+        </g>
+      </g>
+
+      <!-- NOSE -->
+      <path d="M-6,-55 L0,-46 L6,-55 Z" fill="#E63329"/>
+
+      <!-- MOUTH (cat-like W shape) -->
+      <path d="M-12,-40 Q-4,-30 0,-36 Q4,-30 12,-40"
+            stroke="#E63329" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+
+      <!-- BLUSH -->
+      <ellipse cx="-65" cy="-58" rx="16" ry="11" fill="#E63329" opacity="0.1"/>
+      <ellipse cx="65" cy="-58" rx="16" ry="11" fill="#E63329" opacity="0.1"/>
+    </g>
+
+  </g><!-- /tiger -->
+</svg>
+</div>
+
+<div class="controls">
+  <button id="record-btn" onclick="toggleRecord()">Record 6s Video</button>
+</div>
+<div id="status"></div>
+
+<!-- Hidden canvas for video export -->
+<canvas id="export-canvas" width="1080" height="1080"></canvas>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+// ============ ANIMATIONS ============
+
+// Tiger translate origin in SVG coordinate space
+const TX = 540, TY = 470;
+
+// --- Eating cycle (arms lift up, chopsticks carry noodles to mouth) ---
+const eatTl = gsap.timeline({ repeat: -1, defaults: { ease: 'power2.inOut' } });
+eatTl
+  .to('#left-arm', {
+    y: -85,
+    rotation: 10,
+    svgOrigin: `${TX - 70} ${TY + 42}`,
+    duration: 1.1
+  })
+  .to('#right-arm', {
+    y: -18,
+    duration: 1.0
+  }, '<')
+  .to('#noodle-strands', { opacity: 0.9, duration: 0.7 }, '<0.2')
+  .to({}, { duration: 0.65 }) // pause — tiger eats
+  .to('#left-arm', {
+    y: 0,
+    rotation: 0,
+    svgOrigin: `${TX - 70} ${TY + 42}`,
+    duration: 1.0
+  })
+  .to('#right-arm', {
+    y: 0,
+    duration: 0.9
+  }, '<')
+  .to('#noodle-strands', { opacity: 0, duration: 0.5 }, '<0.1')
+  .to({}, { duration: 0.45 }); // rest at bottom
+
+// --- Steam rising ---
+$$('.steam-puff').forEach((puff, i) => {
+  gsap.to(puff, {
+    y: -35,
+    opacity: 0,
+    scale: 1.4,
+    svgOrigin: `${TX} ${TY + 140}`,
+    duration: 2.0,
+    repeat: -1,
+    delay: i * 0.55,
+    ease: 'power1.out'
+  });
+});
+
+// --- Blink ---
+function blink() {
+  const tl = gsap.timeline({
+    onComplete: () => gsap.delayedCall(1.8 + Math.random() * 2, blink)
+  });
+  tl.to('#left-eye, #right-eye', {
+    scaleY: 0.08,
+    transformOrigin: '50% 50%',
+    duration: 0.08,
+    ease: 'power2.in'
+  })
+  .to('#left-eye, #right-eye', {
+    scaleY: 1,
+    duration: 0.14,
+    ease: 'power2.out'
+  });
+}
+gsap.delayedCall(1.2, blink);
+
+// --- Breathing ---
+gsap.to('#body', {
+  scaleY: 1.018,
+  svgOrigin: `${TX} ${TY + 200}`,
+  duration: 1.4,
+  yoyo: true,
+  repeat: -1,
+  ease: 'sine.inOut'
+});
+
+// --- Tail wag ---
+gsap.to('#tail', {
+  rotation: 10,
+  svgOrigin: `${TX + 88} ${TY + 55}`,
+  duration: 0.75,
+  yoyo: true,
+  repeat: -1,
+  ease: 'sine.inOut'
+});
+
+// --- Head tilt ---
+gsap.to('#head', {
+  rotation: 3.5,
+  svgOrigin: `${TX} ${TY + 15}`,
+  duration: 1.6,
+  yoyo: true,
+  repeat: -1,
+  ease: 'sine.inOut'
+});
+
+// --- Floating particles ---
+$$('.particle').forEach((p) => {
+  const dur = 3 + Math.random() * 4;
+  gsap.to(p, {
+    y: -50 - Math.random() * 60,
+    x: (Math.random() - 0.5) * 40,
+    opacity: 0,
+    duration: dur,
+    repeat: -1,
+    ease: 'power1.out',
+    delay: Math.random() * dur
+  });
+});
+
+
+// ============ VIDEO EXPORT ============
+
+let recording = false;
+
+function setStatus(msg) { $('#status').textContent = msg; }
+
+function renderSvgFrame(svgEl, ctx, w, h) {
+  return new Promise((resolve, reject) => {
+    const xml = new XMLSerializer().serializeToString(svgEl);
+    const blob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image(w, h);
+    img.onload = () => {
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve();
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('SVG render failed'));
+    };
+    img.src = url;
+  });
+}
+
+async function toggleRecord() {
+  if (recording) return;
+  recording = true;
+
+  const btn = $('#record-btn');
+  btn.classList.add('recording');
+  btn.textContent = 'Recording...';
+
+  const canvas = $('#export-canvas');
+  const ctx = canvas.getContext('2d');
+  const svgEl = $('#tiger-svg');
+  const duration = 6000;
+
+  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+    ? 'video/webm;codecs=vp9'
+    : MediaRecorder.isTypeSupported('video/webm')
+      ? 'video/webm'
+      : 'video/mp4';
+
+  const stream = canvas.captureStream(30);
+  const recorder = new MediaRecorder(stream, {
+    mimeType,
+    videoBitsPerSecond: 8_000_000
+  });
+
+  const chunks = [];
+  recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+  recorder.onstop = () => {
+    const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const blob = new Blob(chunks, { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fulala-tiger.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+    recording = false;
+    btn.classList.remove('recording');
+    btn.textContent = 'Record 6s Video';
+    setStatus(`Downloaded fulala-tiger.${ext} (${(blob.size / 1024 / 1024).toFixed(1)} MB)`);
+  };
+
+  recorder.start(100);
+  setStatus('Recording 6s...');
+
+  const start = performance.now();
+  function captureLoop() {
+    if (performance.now() - start >= duration) {
+      recorder.stop();
+      return;
+    }
+    renderSvgFrame(svgEl, ctx, 1080, 1080).then(() => {
+      requestAnimationFrame(captureLoop);
+    }).catch(() => {
+      recorder.stop();
+      setStatus('Export failed — use screen record instead: Cmd+Shift+5');
+    });
+  }
+
+  await renderSvgFrame(svgEl, ctx, 1080, 1080);
+  requestAnimationFrame(captureLoop);
+}
+</script>
+</body>
+</html>
